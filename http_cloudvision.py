@@ -4,9 +4,13 @@ import pprint
 
 # 1 Authenticate 
 # 2 Send Request 
+userId = "arista"
+password = "aristaqyk0"
+global cloudVision
+cloudVision = "https://cloud-vision-demo-1-31c471ed.topo.testdrive.arista.com"
 
-def cloudVisionLogin(cloudVision, userId, password):
-    login_uri = cloudVision + "cvpservice/login/authenticate.do"
+def cloudVisionLogin(userId, password):
+    login_uri = cloudVision + "/cvpservice/login/authenticate.do"
     headers = {
         'content-type' : 'application/json'
         }
@@ -15,7 +19,7 @@ def cloudVisionLogin(cloudVision, userId, password):
     return auth_token
 
 def getDevices (token):
-    devicesEndpoints ="https://cloud-vision-demo-1-31c471ed.topo.testdrive.arista.com/cvpservice/inventory/devices"
+    devicesEndpoints = cloudVision+ "/cvpservice/inventory/devices"
     headers = {
         "Authorization": 'Bearer ' + token,
         "Cookie": 'access_token=' + token
@@ -23,9 +27,16 @@ def getDevices (token):
     deviceList = requests.request("GET", devicesEndpoints, headers=headers)
     return deviceList.json()
 
-#uri = "https://cloud-vision-demo-1-31c471ed.topo.testdrive.arista.com/cvpservice/login/authenticate.do"
-cv = "https://cloud-vision-demo-1-31c471ed.topo.testdrive.arista.com"
-userId = "arista"
-password = "aristaqyk0"
+def addConfig(token):
+    configEP = cloudVision + "/cvpservice/configlet/addConfiglet.do"
+    headers = {
+        'Authorization': 'Bearer ' + token,
+        'Cookie': 'access_token=' + token
+    }
+    data = {"config": "hostname Test", "name": "sampleConfigLet"
+    }
+    addingConfiglet = requests.request("POST", configEP, headers=headers, json=data)
+    return addingConfiglet
 
-pprint.pprint(getDevices(cloudVisionLogin(cv, userId, password)))
+pprint.pprint(getDevices(cloudVisionLogin(userId, password)))
+print(addConfig(cloudVisionLogin(userId, password)))
