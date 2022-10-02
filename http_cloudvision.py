@@ -4,9 +4,7 @@ import requests
 import json 
 import pprint 
 from json.decoder import JSONDecodeError
-
-# 1 Authenticate 
-# 2 Send Request 
+ 
 userId = "arista"
 password = "aristaqyk0"
 global cloudVision
@@ -56,13 +54,23 @@ def validateConfiglet(token):
     confLetEP = cloudVision + "/cvpservice/configlet/validateConfig.do"
     netElement = getDevices(cloudVisionLogin(userId, password))
     token["Content-Type"]="text/plain" # Adding content type in the token
-    del token["Authorization"]
+    #del token["Authorization"]
+    payload = {
+        "config": "hostname ABC\n interface e1\n ip address 1.1.1.1/32\n",
+        "netElementId": netElement["netElementId"]
+    }
     try:
-        payload = {"config": "hostname ABC\n interface e1\n ip address 1.1.1.1/32\n","netElementId": "00:1c:73:c0:c6:24"}
-        validate = requests.request("POST", confLetEP, headers=token, data=payload)
-    except: 
-        print("JSON decoding has failed")
-    return validate.text
+        validate = requests.request("POST", confLetEP, headers=token, data=json.dumps(payload))
+        v = json.loads(validate.content)
+        print("Return valus is of type %s" ,type(validate.text))
+        #print("JSON decoding has failed")
+        if v["errors"][0]["error"]:
+            print("please corrt the following Error:", v["errors"][0]["error"])
+        else: 
+            print("Configuration is good to apply")
+    except TypeError:
+        raise("Object is not subscriptable")
+    
 
 #devices = getDevices(cloudVisionLogin(userId, password))
 
