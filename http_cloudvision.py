@@ -23,8 +23,9 @@ def cloudVisionLogin(userId, password):
     }
     return headers
 
-def getDevices (token):
-    deviceHostName = input("Please enter device hostname:\t")
+def getDevices(token):
+    deviceHostName = "Ajitesh-s2-leaf4"
+    #deviceHostName = input("Please enter device hostname:\t")
     devicesEndpoints = cloudVision+ "/cvpservice/inventory/devices"
     deviceList = requests.request("GET", devicesEndpoints, headers=token )
     for dev in deviceList.json():  
@@ -34,7 +35,7 @@ def getDevices (token):
             validateConfigParameters = {"hostname": dev["hostname"], "netElementId": dev["systemMacAddress"]}
             return validateConfigParameters
     print("Devices is not present in the inventory")
-    #return deviceList.json()[1]
+    return deviceList.json()[1]
     
 
 def addConfig(token):
@@ -54,29 +55,28 @@ def validateConfiglet(token):
     confLetEP = cloudVision + "/cvpservice/configlet/validateConfig.do"
     netElement = getDevices(cloudVisionLogin(userId, password))
     token["Content-Type"]="text/plain" # Adding content type in the token
-    #del token["Authorization"]
     payload = {
-        "config": "hostname ABC\n interface e1\n ip address 1.1.1.1/32\n",
+        "config": "hostname ABC\n interface e1\n ip address 1.1.1.1/24\n",
         "netElementId": netElement["netElementId"]
     }
     try:
         validate = requests.request("POST", confLetEP, headers=token, data=json.dumps(payload))
-        v = json.loads(validate.content)
-        print("Return valus is of type %s" ,type(validate.text))
-        #print("JSON decoding has failed")
-        if v["errors"][0]["error"]:
-            print("please corrt the following Error:", v["errors"][0]["error"])
-        else: 
-            print("Configuration is good to apply")
+        if validate.status_code == 200:
+            v = json.loads(validate.content)
+            pprint.pprint(v)
+            try:
+                if v["errors"][0]["error"]:
+                    print("please correct the following Error:", v["errors"][0]["error"])  
+            except KeyError:
+                print("Configuration is good to apply")
+                print(v['result'][0]['messages'])
     except TypeError:
         raise("Object is not subscriptable")
-    
-
 #devices = getDevices(cloudVisionLogin(userId, password))
 
 
 #pprint.pprint(getDevices(cloudVisionLogin(userId, password)))
-pprint.pprint(validateConfiglet(cloudVisionLogin(userId, password)))
+#pprint.pprint(validateConfiglet(cloudVisionLogin(userId, password)))
 #pprint.pprint(addConfig(cloudVisionLogin(userId, password)))
 #k = (getConfiglet(cloudVisionLogin(userId, password))).content
 #pprint.pprint(k)
