@@ -10,7 +10,7 @@ def main():
     url = "https://chat.googleapis.com/v1/spaces/AAAAZKAU1v4/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=u7Zp004b4SclHRxvTSBglVL5IcIhjInl5tlP_MSEH2Y%3D"
 
     bot_message = {
-        'text': 'Hello from Cloud Vision!'}
+        'text': 'Hello from Gullu !'}
     message_headers = {'Content-Type': 'application/json; charset=UTF-8'}
     http_obj = Http()
     response = http_obj.request(
