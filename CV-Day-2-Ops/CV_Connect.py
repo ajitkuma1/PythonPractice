@@ -1,9 +1,11 @@
 import requests
-#from flask import request, url_for, redirect, request, session, render_template
+from requests.exceptions import ConnectionError
+from urllib3.exceptions import NewConnectionError
+from socket import error, gaierror
+from flask import request, url_for, redirect, request, session, render_template
 import json 
 import pprint
 import os
-
 
 class CloudConnect:
     def __init__(self,userId, password, cvaddress):
@@ -12,10 +14,10 @@ class CloudConnect:
         Define cloud vision url and credentials.
         
         """
-
         self.cvaddress = cvaddress
         self.userId = userId
         self.password = password 
+        self.app = Flask(__name__)
     
     def login(self) -> dict:
         print(self.cvaddress)
@@ -23,9 +25,9 @@ class CloudConnect:
         headers = {
         'content-type' : 'application/json'
         }
-        self.login = requests.request("POST", login_uri, auth=(self.userId, self.password ))
         #pprint.pprint(json.loads(login.content))
-        try:
+        self.login = requests.request("POST", login_uri, auth=(self.userId, self.password )) 
+        try: 
             if self.login.status_code == 200 and json.loads(self.login.content)['sessionId']:
                 auth_token = self.login.json()['sessionId']
                 headers = {
@@ -36,8 +38,11 @@ class CloudConnect:
                 return headers
         except KeyError:
             return "Please pass the valid credentials. Status Code: {}".format(json.loads(self.login.content)['errorCode'])
-        
+        except requests.exceptions.ConnectionError: 
+            print("Cloud vision  not up")
+            return (ConnectionError)
 
+    
     def fetchsessioninfo(self) -> str:
         """
         Fetching Login session Info to check if user is active
@@ -78,12 +83,6 @@ class CloudConnect:
                 expireTime = json.load(f)['Expires']
                 sessionId = json.load(f)['sessionId']
                 maxAge = json.load(f)['MaxAge']
-
-
-    
-
-
-
 
 
 userId = "arista"
